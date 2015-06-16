@@ -120,5 +120,117 @@ RSpec.describe Philiprehberger::VersionCompare do
     it 'raises for empty array' do
       expect { described_class.latest([]) }.to raise_error(described_class::Error)
     end
+
+    it 'returns the only version for a single-element array' do
+      expect(described_class.latest(['1.0.0'])).to eq('1.0.0')
+    end
+
+    it 'considers pre-release lower than release' do
+      versions = ['1.0.0-alpha', '1.0.0']
+      expect(described_class.latest(versions)).to eq('1.0.0')
+    end
+  end
+
+  describe '.parse' do
+    it 'parses major.minor without patch' do
+      v = described_class.parse('2.1')
+      expect(v.major).to eq(2)
+      expect(v.minor).to eq(1)
+      expect(v.patch).to eq(0)
+    end
+
+    it 'raises for empty string' do
+      expect { described_class.parse('') }.to raise_error(described_class::Error)
+    end
+
+    it 'raises for non-numeric string' do
+      expect { described_class.parse('abc') }.to raise_error(described_class::Error)
+    end
+
+    it 'strips leading v prefix case-sensitively' do
+      v = described_class.parse('v1.2.3')
+      expect(v.to_s).to eq('1.2.3')
+    end
+
+    it 'handles whitespace around version string' do
+      v = described_class.parse('  1.2.3  ')
+      expect(v.major).to eq(1)
+    end
+  end
+
+  describe 'SemanticVersion comparison' do
+    it 'returns nil when comparing with non-SemanticVersion' do
+      v = described_class.parse('1.0.0')
+      expect(v <=> 'not a version').to be_nil
+    end
+
+    it 'considers two pre-release versions equal when same' do
+      a = described_class.parse('1.0.0-alpha')
+      b = described_class.parse('1.0.0-alpha')
+      expect(a).to eq(b)
+    end
+
+    it 'orders rc after beta' do
+      expect(described_class.parse('1.0.0-rc.1')).to be > described_class.parse('1.0.0-beta.1')
+    end
+  end
+
+  describe '#satisfies?' do
+    it 'satisfies = constraint for exact match' do
+      v = described_class.parse('1.5.3')
+      expect(v.satisfies?('= 1.5.3')).to be true
+    end
+
+    it 'does not satisfy = constraint for non-match' do
+      v = described_class.parse('1.5.3')
+      expect(v.satisfies?('= 1.5.4')).to be false
+    end
+
+    it 'satisfies <= constraint when equal' do
+      v = described_class.parse('2.0.0')
+      expect(v.satisfies?('<= 2.0.0')).to be true
+    end
+
+    it 'satisfies > constraint' do
+      v = described_class.parse('2.0.0')
+      expect(v.satisfies?('> 1.0.0')).to be true
+    end
+
+    it 'does not satisfy > constraint when equal' do
+      v = described_class.parse('1.0.0')
+      expect(v.satisfies?('> 1.0.0')).to be false
+    end
+
+    it 'satisfies bare version as = constraint' do
+      v = described_class.parse('1.5.3')
+      expect(v.satisfies?('1.5.3')).to be true
+    end
+  end
+
+  describe '#to_s' do
+    it 'does not include pre-release when nil' do
+      v = described_class.parse('2.0.0')
+      expect(v.to_s).to eq('2.0.0')
+      expect(v.to_s).not_to include('-')
+    end
+  end
+
+  describe '#inspect' do
+    it 'returns a formatted string' do
+      v = described_class.parse('1.2.3')
+      expect(v.inspect).to eq('#<Version 1.2.3>')
+    end
+  end
+
+  describe '.sort' do
+    it 'sorts versions with pre-releases' do
+      versions = ['1.0.0', '1.0.0-alpha', '1.0.0-beta']
+      sorted = described_class.sort(versions)
+      expect(sorted).to eq(['1.0.0-alpha', '1.0.0-beta', '1.0.0'])
+    end
+
+    it 'handles single version' do
+      expect(described_class.sort(['1.0.0'])).to eq(['1.0.0'])
+    end
   end
 end
