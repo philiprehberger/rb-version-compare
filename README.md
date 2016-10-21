@@ -15,7 +15,7 @@ Version string parsing with comparison, sorting, and constraint matching
 Add to your Gemfile:
 
 ```ruby
-gem 'philiprehberger-version_compare'
+gem "philiprehberger-version_compare"
 ```
 
 Or install directly:
