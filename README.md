@@ -27,7 +27,7 @@ gem install philiprehberger-version_compare
 ## Usage
 
 ```ruby
-require 'philiprehberger/version_compare'
+require "philiprehberger/version_compare"
 
 v = Philiprehberger::VersionCompare.parse('1.2.3')
 v.major       # => 1
