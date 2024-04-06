@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'Version string parsing with comparison, sorting, and constraint matching'
   spec.description = 'Parse semantic version strings into comparable objects with support for ' \
-                       'sorting, finding the latest version, and checking constraint satisfaction.'
+                     'sorting, finding the latest version, and checking constraint satisfaction.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-version_compare'
   spec.license = 'MIT'
 
