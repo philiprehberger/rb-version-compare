@@ -68,6 +68,35 @@ v.satisfies?('~> 1.5')   # => true
 v.satisfies?('!= 1.0.0') # => true
 ```
 
+### Version Bumping
+
+```ruby
+v = Philiprehberger::VersionCompare.parse('1.2.3')
+
+v.next_major.to_s # => "2.0.0"
+v.next_minor.to_s # => "1.3.0"
+v.next_patch.to_s # => "1.2.4"
+```
+
+### Build Metadata
+
+```ruby
+v = Philiprehberger::VersionCompare.parse('1.0.0+build.123')
+v.build_metadata # => "build.123"
+
+# Build metadata is ignored in comparison (per SemVer spec)
+a = Philiprehberger::VersionCompare.parse('1.0.0+build.1')
+b = Philiprehberger::VersionCompare.parse('1.0.0+build.2')
+a == b # => true
+```
+
+### Stability Check
+
+```ruby
+Philiprehberger::VersionCompare.parse('1.0.0').stable?       # => true
+Philiprehberger::VersionCompare.parse('1.0.0-beta').stable?   # => false
+```
+
 ### Sorting and Latest
 
 ```ruby
@@ -80,6 +109,18 @@ Philiprehberger::VersionCompare.latest(versions)
 # => "2.0.0"
 ```
 
+### Filtering
+
+```ruby
+versions = ['0.9.0', '1.0.0', '1.5.0', '2.0.0']
+
+Philiprehberger::VersionCompare.filter(versions, '>= 1.0.0')
+# => ["1.0.0", "1.5.0", "2.0.0"]
+
+Philiprehberger::VersionCompare.filter(versions, '~> 1.0')
+# => ["1.0.0", "1.5.0"]
+```
+
 ## API
 
 ### `Philiprehberger::VersionCompare`
@@ -89,6 +130,7 @@ Philiprehberger::VersionCompare.latest(versions)
 | `.parse(str)` | Parse a version string into a `SemanticVersion` |
 | `.sort(versions)` | Sort an array of version strings in ascending order |
 | `.latest(versions)` | Return the highest version string from an array |
+| `.filter(versions, constraint)` | Filter an array of version strings by a constraint |
 
 ### `SemanticVersion`
 
@@ -98,7 +140,13 @@ Philiprehberger::VersionCompare.latest(versions)
 | `#minor` | Minor version number |
 | `#patch` | Patch version number |
 | `#pre_release` | Pre-release identifier or nil |
+| `#build_metadata` | Build metadata string or nil |
 | `#satisfies?(constraint)` | Check if version satisfies a constraint (`>=`, `<`, `~>`, `!=`) |
+| `#next_major` | New version with major+1, minor=0, patch=0 |
+| `#next_minor` | New version with minor+1, patch=0 |
+| `#next_patch` | New version with patch+1 |
+| `#stable?` | True if no pre-release tag |
+| `#to_a` | Returns `[major, minor, patch]` array |
 | `#<=>(other)` | Compare two versions (includes `Comparable`) |
 | `#to_s` | String representation of the version |
 

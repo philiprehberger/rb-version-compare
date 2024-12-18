@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-03
+
+### Added
+- Add `#next_major`, `#next_minor`, `#next_patch` version bump methods
+- Add `#stable?` to check if a version has no pre-release tag
+- Add `#to_a` to return `[major, minor, patch]` array
+- Add `#build_metadata` reader and build metadata parsing support (`+build.123`)
+- Add `.filter(versions, constraint)` to filter version arrays by constraint
+- Build metadata is stored but ignored in comparison per SemVer spec
+
 ## [0.1.6] - 2026-03-31
 
 ### Added
