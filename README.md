@@ -121,6 +121,22 @@ Philiprehberger::VersionCompare.filter(versions, '~> 1.0')
 # => ["1.0.0", "1.5.0"]
 ```
 
+### Highest satisfying version
+
+```ruby
+versions = ['0.9.0', '1.0.0', '1.5.0', '2.0.0', '3.0.0']
+
+Philiprehberger::VersionCompare.highest_satisfying(versions, '~> 1.0')
+# => "1.5.0"
+
+Philiprehberger::VersionCompare.highest_satisfying(versions, '< 2.0.0')
+# => "1.5.0"
+
+# Returns nil when no version matches
+Philiprehberger::VersionCompare.highest_satisfying(versions, '>= 4.0.0')
+# => nil
+```
+
 ## API
 
 ### `Philiprehberger::VersionCompare`
@@ -131,6 +147,7 @@ Philiprehberger::VersionCompare.filter(versions, '~> 1.0')
 | `.sort(versions)` | Sort an array of version strings in ascending order |
 | `.latest(versions)` | Return the highest version string from an array |
 | `.filter(versions, constraint)` | Filter an array of version strings by a constraint |
+| `.highest_satisfying(versions, constraint)` | Return the highest version string that satisfies a constraint, or `nil` |
 
 ### `SemanticVersion`
 

@@ -193,5 +193,34 @@ module Philiprehberger
     def self.filter(versions, constraint)
       versions.select { |v| parse(v).satisfies?(constraint) }
     end
+
+    # Return the highest version from an array that satisfies a constraint
+    #
+    # Performs a single pass over versions, tracking the maximum parsed
+    # version whose parsed form satisfies the constraint. Pre-release and
+    # stable resolution follow the same precedence used by {.sort} and
+    # {.latest} (pre-release versions rank lower than their stable
+    # counterparts per SemVer).
+    #
+    # @param versions [Array<String>] version strings to search
+    # @param constraint [String] constraint like ">= 1.0.0", "~> 2.1"
+    # @return [String, nil] the highest version string that satisfies the
+    #   constraint, or nil if versions is empty or nothing matches
+    def self.highest_satisfying(versions, constraint)
+      best_raw = nil
+      best_parsed = nil
+
+      versions.each do |v|
+        parsed = parse(v)
+        next unless parsed.satisfies?(constraint)
+
+        if best_parsed.nil? || parsed > best_parsed
+          best_parsed = parsed
+          best_raw = v
+        end
+      end
+
+      best_raw
+    end
   end
 end
