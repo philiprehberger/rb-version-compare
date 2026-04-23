@@ -351,4 +351,55 @@ RSpec.describe Philiprehberger::VersionCompare do
       expect(described_class.filter(versions, '>= 0.1.0')).to eq(versions)
     end
   end
+
+  describe '.highest_satisfying' do
+    it 'returns the single matching version when only one matches' do
+      versions = ['0.9.0', '1.0.0', '2.0.0']
+      expect(described_class.highest_satisfying(versions, '~> 1.0')).to eq('1.0.0')
+    end
+
+    it 'returns the highest version when multiple match' do
+      versions = ['1.0.0', '1.5.0', '1.9.3', '2.0.0']
+      expect(described_class.highest_satisfying(versions, '>= 1.0.0')).to eq('2.0.0')
+    end
+
+    it 'returns the highest matching version ignoring higher non-matching versions' do
+      versions = ['1.0.0', '1.2.0', '1.5.0', '2.0.0', '3.0.0']
+      expect(described_class.highest_satisfying(versions, '< 2.0.0')).to eq('1.5.0')
+    end
+
+    it 'returns nil when no version matches' do
+      versions = ['0.9.0', '1.0.0', '1.5.0']
+      expect(described_class.highest_satisfying(versions, '>= 2.0.0')).to be_nil
+    end
+
+    it 'returns nil when versions is empty' do
+      expect(described_class.highest_satisfying([], '>= 1.0.0')).to be_nil
+    end
+
+    it 'prefers stable over pre-release when both satisfy the constraint' do
+      versions = ['1.0.0-beta', '1.0.0', '1.0.0-rc.1']
+      expect(described_class.highest_satisfying(versions, '>= 1.0.0-alpha')).to eq('1.0.0')
+    end
+
+    it 'returns a pre-release when it is the highest match' do
+      versions = ['1.0.0-alpha', '1.0.0-beta', '1.0.0-rc.1']
+      expect(described_class.highest_satisfying(versions, '< 1.0.0')).to eq('1.0.0-rc.1')
+    end
+
+    it 'preserves the original string form of the matched version' do
+      versions = ['v1.0.0', 'v1.2.0', 'v1.5.0']
+      expect(described_class.highest_satisfying(versions, '>= 1.0.0')).to eq('v1.5.0')
+    end
+
+    it 'works with unsorted input' do
+      versions = ['2.0.0', '1.0.0', '1.5.0', '0.9.0']
+      expect(described_class.highest_satisfying(versions, '~> 1.0')).to eq('1.5.0')
+    end
+
+    it 'returns the exact match for = constraint' do
+      versions = ['1.0.0', '1.5.0', '2.0.0']
+      expect(described_class.highest_satisfying(versions, '= 1.5.0')).to eq('1.5.0')
+    end
+  end
 end

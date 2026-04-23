@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-17
+
+### Added
+- `VersionCompare.highest_satisfying(versions, constraint)` returns the highest version matching a constraint, or `nil` if none match
+
 ## [0.2.0] - 2026-04-03
 
 ### Added
