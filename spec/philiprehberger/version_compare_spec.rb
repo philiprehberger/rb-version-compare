@@ -190,6 +190,36 @@ RSpec.describe Philiprehberger::VersionCompare do
     it 'satisfies bare version as = constraint' do
       expect(version.satisfies?('1.5.3')).to be true
     end
+
+    it 'satisfies comma-chained constraints when all match' do
+      expect(version.satisfies?('>= 1.0.0, < 2.0.0')).to be true
+    end
+
+    it 'satisfies comma-chained constraints without whitespace' do
+      expect(version.satisfies?('>= 1.0.0,< 2.0.0')).to be true
+    end
+
+    it 'satisfies comma-chained constraints with extra whitespace' do
+      expect(version.satisfies?('  >= 1.0.0  ,   < 2.0.0  ')).to be true
+    end
+
+    it 'does not satisfy comma-chained constraints when one piece fails' do
+      expect(version.satisfies?('>= 1.0.0, < 1.5.0')).to be false
+    end
+
+    it 'does not satisfy comma-chained constraints when first piece fails' do
+      expect(version.satisfies?('>= 2.0.0, < 3.0.0')).to be false
+    end
+  end
+
+  describe '#prerelease?' do
+    it 'returns true for pre-release versions' do
+      expect(described_class.parse('1.0.0-alpha').prerelease?).to be true
+    end
+
+    it 'returns false for stable versions' do
+      expect(described_class.parse('1.0.0').prerelease?).to be false
+    end
   end
 
   describe '#next_major' do
@@ -325,6 +355,54 @@ RSpec.describe Philiprehberger::VersionCompare do
     it 'considers pre-release lower than release' do
       versions = ['1.0.0-alpha', '1.0.0']
       expect(described_class.latest(versions)).to eq('1.0.0')
+    end
+  end
+
+  describe '.min' do
+    it 'returns the lowest version from strings' do
+      expect(described_class.min(['1.0.0', '2.3.1', '1.5.0']).to_s).to eq('1.0.0')
+    end
+
+    it 'returns the lowest version from SemanticVersion instances' do
+      versions = [
+        described_class.parse('2.0.0'),
+        described_class.parse('1.0.0'),
+        described_class.parse('1.5.0')
+      ]
+      expect(described_class.min(versions).to_s).to eq('1.0.0')
+    end
+
+    it 'returns the lowest version from a mixed array' do
+      versions = ['2.0.0', described_class.parse('1.0.0'), '1.5.0']
+      expect(described_class.min(versions).to_s).to eq('1.0.0')
+    end
+
+    it 'returns nil for an empty array' do
+      expect(described_class.min([])).to be_nil
+    end
+  end
+
+  describe '.max' do
+    it 'returns the highest version from strings' do
+      expect(described_class.max(['1.0.0', '2.3.1', '1.5.0']).to_s).to eq('2.3.1')
+    end
+
+    it 'returns the highest version from SemanticVersion instances' do
+      versions = [
+        described_class.parse('1.0.0'),
+        described_class.parse('2.3.1'),
+        described_class.parse('1.5.0')
+      ]
+      expect(described_class.max(versions).to_s).to eq('2.3.1')
+    end
+
+    it 'returns the highest version from a mixed array' do
+      versions = ['1.0.0', described_class.parse('2.3.1'), '1.5.0']
+      expect(described_class.max(versions).to_s).to eq('2.3.1')
+    end
+
+    it 'returns nil for an empty array' do
+      expect(described_class.max([])).to be_nil
     end
   end
 

@@ -40,31 +40,15 @@ module Philiprehberger
 
       # Check if this version satisfies a constraint string
       #
-      # @param constraint [String] constraint like ">= 1.0.0", "~> 2.1", "!= 1.2.3", "< 3.0.0"
-      # @return [Boolean] true if the version satisfies the constraint
+      # Accepts a single constraint or comma-chained constraints. When chained,
+      # all sub-constraints must be satisfied.
+      #
+      # @param constraint [String] constraint like ">= 1.0.0", "~> 2.1", "!= 1.2.3", "< 3.0.0",
+      #   or comma-chained like ">= 1.0.0, < 2.0.0"
+      # @return [Boolean] true if the version satisfies the constraint(s)
       # @raise [Error] if the constraint format is invalid
       def satisfies?(constraint)
-        operator, version_str = parse_constraint(constraint)
-        other = VersionCompare.parse(version_str)
-
-        case operator
-        when '>='
-          self >= other
-        when '<='
-          self <= other
-        when '>'
-          self > other
-        when '<'
-          self < other
-        when '='
-          self == other
-        when '!='
-          self != other
-        when '~>'
-          pessimistic_match?(other)
-        else
-          raise Error, "unknown operator: #{operator}"
-        end
+        constraint.split(',').all? { |piece| satisfies_one?(piece.strip) }
       end
 
       # Return a new version with major incremented, minor and patch reset to 0
@@ -95,6 +79,11 @@ module Philiprehberger
         pre_release.nil?
       end
 
+      # @return [Boolean] true when this version has a pre-release identifier
+      def prerelease?
+        !stable?
+      end
+
       # Return the version components as an array
       #
       # @return [Array<Integer>] [major, minor, patch]
@@ -115,6 +104,30 @@ module Philiprehberger
       end
 
       private
+
+      def satisfies_one?(constraint)
+        operator, version_str = parse_constraint(constraint)
+        other = VersionCompare.parse(version_str)
+
+        case operator
+        when '>='
+          self >= other
+        when '<='
+          self <= other
+        when '>'
+          self > other
+        when '<'
+          self < other
+        when '='
+          self == other
+        when '!='
+          self != other
+        when '~>'
+          pessimistic_match?(other)
+        else
+          raise Error, "unknown operator: #{operator}"
+        end
+      end
 
       def compare_pre_release(other)
         return 0 if pre_release.nil? && other.pre_release.nil?
@@ -183,6 +196,24 @@ module Philiprehberger
       raise Error, 'no versions provided' if versions.empty?
 
       versions.max_by { |v| parse(v) }
+    end
+
+    # Return the lowest version from an array of versions
+    #
+    # @param versions [Array<String, SemanticVersion>]
+    # @return [SemanticVersion, nil] lowest version (nil for empty input)
+    def self.min(versions)
+      parsed = versions.map { |v| v.is_a?(SemanticVersion) ? v : parse(v) }
+      parsed.min
+    end
+
+    # Return the highest version from an array of versions
+    #
+    # @param versions [Array<String, SemanticVersion>]
+    # @return [SemanticVersion, nil] highest version (nil for empty input)
+    def self.max(versions)
+      parsed = versions.map { |v| v.is_a?(SemanticVersion) ? v : parse(v) }
+      parsed.max
     end
 
     # Filter an array of version strings by a constraint

@@ -68,6 +68,22 @@ v.satisfies?('~> 1.5')   # => true
 v.satisfies?('!= 1.0.0') # => true
 ```
 
+### Range Constraints
+
+```ruby
+require "philiprehberger/version_compare"
+
+v = Philiprehberger::VersionCompare.parse('1.5.0')
+v.satisfies?('>= 1.0.0, < 2.0.0')  # => true
+```
+
+### Helpers
+
+```ruby
+Philiprehberger::VersionCompare.max(['1.0.0', '2.3.1', '1.5.0'])  # => v2.3.1
+Philiprehberger::VersionCompare.parse('1.0.0-alpha').prerelease?  # => true
+```
+
 ### Version Bumping
 
 ```ruby
@@ -148,6 +164,7 @@ Philiprehberger::VersionCompare.highest_satisfying(versions, '>= 4.0.0')
 | `.latest(versions)` | Return the highest version string from an array |
 | `.filter(versions, constraint)` | Filter an array of version strings by a constraint |
 | `.highest_satisfying(versions, constraint)` | Return the highest version string that satisfies a constraint, or `nil` |
+| `.min(versions)` / `.max(versions)` | Lowest/highest version from a list |
 
 ### `SemanticVersion`
 
@@ -158,11 +175,12 @@ Philiprehberger::VersionCompare.highest_satisfying(versions, '>= 4.0.0')
 | `#patch` | Patch version number |
 | `#pre_release` | Pre-release identifier or nil |
 | `#build_metadata` | Build metadata string or nil |
-| `#satisfies?(constraint)` | Check if version satisfies a constraint (`>=`, `<`, `~>`, `!=`) |
+| `#satisfies?(constraint)` | Now accepts comma-chained constraints (`'>=1.0.0, <2.0.0'`) |
 | `#next_major` | New version with major+1, minor=0, patch=0 |
 | `#next_minor` | New version with minor+1, patch=0 |
 | `#next_patch` | New version with patch+1 |
 | `#stable?` | True if no pre-release tag |
+| `#prerelease?` | Inverse of `#stable?` |
 | `#to_a` | Returns `[major, minor, patch]` array |
 | `#<=>(other)` | Compare two versions (includes `Comparable`) |
 | `#to_s` | String representation of the version |
