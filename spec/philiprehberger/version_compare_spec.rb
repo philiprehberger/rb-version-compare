@@ -480,4 +480,35 @@ RSpec.describe Philiprehberger::VersionCompare do
       expect(described_class.highest_satisfying(versions, '= 1.5.0')).to eq('1.5.0')
     end
   end
+
+  describe '.compatible?' do
+    it 'considers same major + higher minor compatible at >= 1.0' do
+      expect(described_class.compatible?('1.2.0', '1.5.3')).to be true
+    end
+
+    it 'considers identical versions compatible' do
+      expect(described_class.compatible?('1.2.3', '1.2.3')).to be true
+    end
+
+    it 'rejects different major versions' do
+      expect(described_class.compatible?('1.5.0', '2.0.0')).to be false
+      expect(described_class.compatible?('2.0.0', '1.9.9')).to be false
+    end
+
+    it 'rejects a candidate that is older than the baseline' do
+      expect(described_class.compatible?('1.5.0', '1.4.9')).to be false
+    end
+
+    it 'requires same minor when major is zero (pre-1.0)' do
+      expect(described_class.compatible?('0.3.0', '0.3.4')).to be true
+      expect(described_class.compatible?('0.3.0', '0.4.0')).to be false
+      expect(described_class.compatible?('0.3.0', '0.2.9')).to be false
+    end
+
+    it 'accepts pre-parsed SemanticVersion instances' do
+      base = described_class.parse('1.0.0')
+      cand = described_class.parse('1.4.2')
+      expect(described_class.compatible?(base, cand)).to be true
+    end
+  end
 end

@@ -225,6 +225,30 @@ module Philiprehberger
       versions.select { |v| parse(v).satisfies?(constraint) }
     end
 
+    # Check whether two versions are API-compatible per SemVer.
+    #
+    # Two versions are considered compatible when:
+    # - both share the same major component, AND
+    # - the candidate is greater than or equal to the baseline (so it has every API
+    #   the baseline expects)
+    #
+    # When the baseline is pre-1.0.0 (major == 0), SemVer considers every minor bump
+    # potentially breaking; in that regime compatibility additionally requires the
+    # same minor component, matching the `~>` (pessimistic) constraint behavior.
+    #
+    # @param baseline [String, SemanticVersion] the version your code expects
+    # @param candidate [String, SemanticVersion] the version actually present
+    # @return [Boolean] true when `candidate` is API-compatible with `baseline`
+    def self.compatible?(baseline, candidate)
+      base = baseline.is_a?(SemanticVersion) ? baseline : parse(baseline)
+      cand = candidate.is_a?(SemanticVersion) ? candidate : parse(candidate)
+
+      return false unless base.major == cand.major
+      return false if cand < base
+
+      base.major.zero? ? base.minor == cand.minor : true
+    end
+
     # Return the highest version from an array that satisfies a constraint
     #
     # Performs a single pass over versions, tracking the maximum parsed

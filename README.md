@@ -4,6 +4,8 @@
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-version_compare.svg)](https://rubygems.org/gems/philiprehberger-version_compare)
 [![Last updated](https://img.shields.io/github/last-commit/philiprehberger/rb-version-compare)](https://github.com/philiprehberger/rb-version-compare/commits/main)
 
+![philiprehberger-version_compare](https://raw.githubusercontent.com/philiprehberger/rb-version-compare/main/package-card.webp)
+
 Version string parsing with comparison, sorting, and constraint matching
 
 ## Requirements
@@ -153,6 +155,23 @@ Philiprehberger::VersionCompare.highest_satisfying(versions, '>= 4.0.0')
 # => nil
 ```
 
+### API Compatibility Check
+
+```ruby
+# Same major + candidate >= baseline => compatible
+Philiprehberger::VersionCompare.compatible?("1.2.0", "1.5.3")  # => true
+
+# Different major => incompatible
+Philiprehberger::VersionCompare.compatible?("1.5.0", "2.0.0")  # => false
+
+# Below baseline => incompatible
+Philiprehberger::VersionCompare.compatible?("1.5.0", "1.4.9")  # => false
+
+# Pre-1.0.0 requires matching minor (matches `~>` semantics)
+Philiprehberger::VersionCompare.compatible?("0.3.0", "0.3.4")  # => true
+Philiprehberger::VersionCompare.compatible?("0.3.0", "0.4.0")  # => false
+```
+
 ## API
 
 ### `Philiprehberger::VersionCompare`
@@ -165,6 +184,7 @@ Philiprehberger::VersionCompare.highest_satisfying(versions, '>= 4.0.0')
 | `.filter(versions, constraint)` | Filter an array of version strings by a constraint |
 | `.highest_satisfying(versions, constraint)` | Return the highest version string that satisfies a constraint, or `nil` |
 | `.min(versions)` / `.max(versions)` | Lowest/highest version from a list |
+| `.compatible?(baseline, candidate)` | API-compatibility check: same major + candidate >= baseline (pre-1.0 also requires matching minor) |
 
 ### `SemanticVersion`
 
